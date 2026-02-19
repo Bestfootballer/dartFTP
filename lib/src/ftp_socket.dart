@@ -20,8 +20,14 @@ class FTPSocket {
   ListCommand listCommand = ListCommand.MLSD;
   bool supportIPV6 = false;
 
-  FTPSocket(this.host, this.port, this.securityType, this.logger, this.timeout,
-      {this.sendingResponseDelay = const Duration(milliseconds: 300)});
+  FTPSocket(
+    this.host,
+    this.port,
+    this.securityType,
+    this.logger,
+    this.timeout, {
+    this.sendingResponseDelay = const Duration(milliseconds: 300),
+  });
 
   /// Set current transfer type of socket
   ///
@@ -45,10 +51,14 @@ class FTPSocket {
 
       await Future.delayed(sendingResponseDelay);
       return true;
-    }).timeout(Duration(seconds: timeout), onTimeout: () {
-      throw FTPConnectionTimeoutException(
-          'Timeout reached for Receiving response !');
-    });
+    }).timeout(
+      Duration(seconds: timeout),
+      onTimeout: () {
+        throw FTPConnectionTimeoutException(
+          'Timeout reached for Receiving response !',
+        );
+      },
+    );
 
     String r = res.toString();
     if (r.startsWith("\n")) r = r.replaceFirst("\n", "");
@@ -70,9 +80,11 @@ class FTPSocket {
     if (code == null)
       throw FTPIllegalReplyException("Illegal Reply Exception", r);
 
-    if (code == 421)
-      throw FTPConnectionTimeoutException(
-          "Service not available, closing control connection.", r);
+    final FTPCode? ftpCode = FTPCode.fromCode(code);
+
+    if (ftpCode!.isError) {
+      throw ftpCode.exception;
+    }
 
     FTPReply reply = FTPReply(code, r);
     logger.log('< ${reply.toString()}');
@@ -111,15 +123,13 @@ class FTPSocket {
           onBadCertificate: (certificate) => true,
         );
       } else {
-        _socket = await RawSocket.connect(
-          host,
-          port,
-          timeout: timeout,
-        );
+        _socket = await RawSocket.connect(host, port, timeout: timeout);
       }
     } catch (e) {
       throw FTPConnectException(
-          'Could not connect to $host ($port)', e.toString());
+        'Could not connect to $host ($port)',
+        e.toString(),
+      );
     }
 
     logger.log('Connection established, waiting for welcome message...');
@@ -132,13 +142,16 @@ class FTPSocket {
         lResp = await sendCommand('AUTH SSL');
         if (!lResp.isSuccessCode()) {
           throw FTPESConnectException(
-              'FTPES cannot be applied: the server refused both AUTH TLS and AUTH SSL commands',
-              lResp.message);
+            'FTPES cannot be applied: the server refused both AUTH TLS and AUTH SSL commands',
+            lResp.message,
+          );
         }
       }
 
-      _socket = await RawSecureSocket.secure(_socket,
-          onBadCertificate: (certificate) => true);
+      _socket = await RawSecureSocket.secure(
+        _socket,
+        onBadCertificate: (certificate) => true,
+      );
     }
 
     if ([SecurityType.FTPES, SecurityType.FTPS].contains(securityType)) {
@@ -161,7 +174,9 @@ class FTPSocket {
         }
       } else if (!lResp.isSuccessCode()) {
         throw FTPWrongCredentialsException(
-            'Wrong Username/password', lResp.message);
+          'Wrong Username/password',
+          lResp.message,
+        );
       }
       //account required
     } else if (lResp.code == 332) {
@@ -187,7 +202,9 @@ class FTPSocket {
       res = await sendCommand(supportIPV6 ? 'EPSV' : 'PASV');
       if (!res.isSuccessCode()) {
         throw FTPUnablePassiveModeException(
-            'Could not start Passive Mode', res.message);
+          'Could not start Passive Mode',
+          res.message,
+        );
       }
     }
 
