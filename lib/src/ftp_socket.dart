@@ -17,7 +17,7 @@ class FTPSocket {
   late RawSocket _socket;
   TransferMode transferMode = TransferMode.passive;
   TransferType _transferType = TransferType.auto;
-  ListCommand listCommand = ListCommand.MLSD;
+  ListCommand listCommand = ListCommand.mlsd;
   bool supportIPV6 = false;
 
   FTPSocket(
@@ -44,7 +44,7 @@ class FTPSocket {
 
       //this is used to read all data for specific command line
       while (_socket.available() > 0) {
-        res.write(String.fromCharCodes(_socket.read()!).trim());
+        res.write(Utf8Codec().decode(_socket.read()!).trim());
         dataReceivedSuccessfully = true;
       }
       if (dataReceivedSuccessfully) return false;
@@ -63,8 +63,9 @@ class FTPSocket {
     String r = res.toString();
     if (r.startsWith("\n")) r = r.replaceFirst("\n", "");
 
-    if (r.length < 3)
+    if (r.length < 3) {
       throw FTPIllegalReplyException("Illegal Reply Exception", r);
+    }
 
     int? code;
     List<String> lines = r.split('\n');
@@ -74,11 +75,13 @@ class FTPSocket {
       if (line.length >= 3) code = int.tryParse(line.substring(0, 3)) ?? code;
     }
     //multiline response
-    if (line != null && line.length >= 4 && line[3] == '-')
+    if (line != null && line.length >= 4 && line[3] == '-') {
       return await readResponse();
+    }
 
-    if (code == null)
+    if (code == null) {
       throw FTPIllegalReplyException("Illegal Reply Exception", r);
+    }
 
     final FTPCode? ftpCode = FTPCode.fromCode(code);
 
@@ -115,7 +118,7 @@ class FTPSocket {
 
     try {
       // FTPS starts secure
-      if (securityType == SecurityType.FTPS) {
+      if (securityType == SecurityType.ftps) {
         _socket = await RawSecureSocket.connect(
           host,
           port,
@@ -136,7 +139,7 @@ class FTPSocket {
     await readResponse();
 
     // FTPES needs to be upgraded prior to getting a welcome
-    if (securityType == SecurityType.FTPES) {
+    if (securityType == SecurityType.ftpes) {
       FTPReply lResp = await sendCommand('AUTH TLS');
       if (!lResp.isSuccessCode()) {
         lResp = await sendCommand('AUTH SSL');
@@ -154,7 +157,7 @@ class FTPSocket {
       );
     }
 
-    if ([SecurityType.FTPES, SecurityType.FTPS].contains(securityType)) {
+    if ([SecurityType.ftpes, SecurityType.ftps].contains(securityType)) {
       await sendCommand('PBSZ 0');
       await sendCommand('PROT P');
     }
@@ -166,8 +169,9 @@ class FTPSocket {
     if (lResp.code == 331) {
       lResp = await sendCommand('PASS $pass');
       if (lResp.code == 332) {
-        if (account == null)
+        if (account == null) {
           throw FTPAccountRequiredException('Account required');
+        }
         lResp = await sendCommand('ACCT $account');
         if (!lResp.isSuccessCode()) {
           throw FTPWrongCredentialsException('Wrong Account', lResp.message);
@@ -180,8 +184,9 @@ class FTPSocket {
       }
       //account required
     } else if (lResp.code == 332) {
-      if (account == null)
+      if (account == null) {
         throw FTPAccountRequiredException('Account required');
+      }
       lResp = await sendCommand('ACCT $account');
       if (!lResp.isSuccessCode()) {
         throw FTPWrongCredentialsException('Wrong Account', lResp.message);
@@ -227,8 +232,6 @@ class FTPSocket {
       case TransferType.binary:
         // Set to BINARY mode
         await sendCommand('TYPE I');
-        break;
-      default:
         break;
     }
     _transferType = pTransferType;

@@ -2,53 +2,53 @@ import 'package:collection/collection.dart';
 
 enum FTPCode {
   // 1xx - Preliminary Replies
-  RestartMarker(110),
-  ServiceReadyDelay(120),
-  DataConnectionAlreadyOpen(125),
-  OpeningDataConnection(150),
+  restartMarker(110),
+  serviceReadyDelay(120),
+  dataConnectionAlreadyOpen(125),
+  openingDataConnection(150),
   // 2xx - Positive Completion Replies
-  CommandOkay(200),
-  CommandNotImplementedSuperfluous(202),
-  SystemStatus(211),
-  DirectoryStatus(212),
-  FileStatus(213),
-  HelpMessage(214),
-  SystemType(215),
-  ServiceReady(220),
-  ClosingConnection(221),
-  DataConnectionOpen(225),
-  ClosingDataConnection(226),
-  PassiveMode(227),
-  LongPassiveMode(228),
-  ExtendedPassiveMode(229),
-  UserLoggedIn(230),
-  FileActionComplete(250),
-  PathnameCreated(257),
+  commandOkay(200),
+  commandNotImplementedSuperfluous(202),
+  systemStatus(211),
+  directoryStatus(212),
+  fileStatus(213),
+  helpMessage(214),
+  systemType(215),
+  serviceReady(220),
+  closingConnection(221),
+  dataConnectionOpen(225),
+  closingDataConnection(226),
+  passiveMode(227),
+  longPassiveMode(228),
+  extendedPassiveMode(229),
+  userLoggedIn(230),
+  fileActionComplete(250),
+  pathnameCreated(257),
   // 3xx - Intermediate Positive Replies
-  NeedPassword(331),
-  NeedAccount(332),
-  PendingFurtherInformation(350),
+  needPassword(331),
+  needAccount(332),
+  pendingFurtherInformation(350),
   // 4xx - Transient Negative Replies
-  ServiceNotAvailable(421),
-  DataConnectionError(425),
-  TransferAborted(426),
-  InvalidCredentials(430),
-  HostUnavailable(434),
-  FileActionNotTaken(450),
-  LocalError(451),
-  InsufficientStorage(452),
+  serviceNotAvailable(421),
+  dataConnectionError(425),
+  transferAborted(426),
+  invalidCredentials(430),
+  hostUnavailable(434),
+  fileActionNotTaken(450),
+  localError(451),
+  insufficientStorage(452),
   // 5xx - Permanent Negative Replies
-  SyntaxError(500),
-  ParameterError(501),
-  CommandNotImplemented(502),
-  BadSequence(503),
-  NotImplementedForParameter(504),
-  NotLoggedIn(530),
-  NeedAccountForStorage(532),
-  FileUnavailable(550),
-  PageTypeUnknown(551),
-  ExceededStorage(552),
-  FileNameNotAllowed(553);
+  syntaxError(500),
+  parameterError(501),
+  commandNotImplemented(502),
+  badSequence(503),
+  notImplementedForParameter(504),
+  notLoggedIn(530),
+  needAccountForStorage(532),
+  fileUnavailable(550),
+  pageTypeUnknown(551),
+  exceededStorage(552),
+  fileNameNotAllowed(553);
 
   final int code;
 
@@ -62,125 +62,125 @@ enum FTPCode {
 
   Exception get exception {
     return switch (this) {
-      FTPCode.RestartMarker => FTPRestartMarkerException(
+      FTPCode.restartMarker => FTPRestartMarkerException(
         "Restart marker reply.",
       ),
-      FTPCode.ServiceReadyDelay => FTPServiceReadyDelayException(
+      FTPCode.serviceReadyDelay => FTPServiceReadyDelayException(
         "Service ready in nnn minutes.",
       ),
-      FTPCode.DataConnectionAlreadyOpen =>
+      FTPCode.dataConnectionAlreadyOpen =>
         FTPDataConnectionAlreadyOpenException(
           "Data connection already open; transfer starting.",
         ),
-      FTPCode.OpeningDataConnection => FTPOpeningDataConnectionException(
+      FTPCode.openingDataConnection => FTPOpeningDataConnectionException(
         "File status okay; about to open data connection.",
       ),
-      FTPCode.CommandOkay => FTPCommandOkayException("Command okay."),
-      FTPCode.CommandNotImplementedSuperfluous =>
+      FTPCode.commandOkay => FTPCommandOkayException("Command okay."),
+      FTPCode.commandNotImplementedSuperfluous =>
         FTPCommandNotImplementedSuperfluousException(
           "Command not implemented, superfluous at this site.",
         ),
-      FTPCode.SystemStatus => FTPSystemStatusException(
+      FTPCode.systemStatus => FTPSystemStatusException(
         "System status, or system help reply.",
       ),
-      FTPCode.DirectoryStatus => FTPDirectoryStatusException(
+      FTPCode.directoryStatus => FTPDirectoryStatusException(
         "Directory status.",
       ),
-      FTPCode.FileStatus => FTPFileStatusException("File status."),
-      FTPCode.HelpMessage => FTPHelpMessageException("Help message."),
-      FTPCode.SystemType => FTPSystemTypeException("NAME system type."),
-      FTPCode.ServiceReady => FTPServiceReadyException(
+      FTPCode.fileStatus => FTPFileStatusException("File status."),
+      FTPCode.helpMessage => FTPHelpMessageException("Help message."),
+      FTPCode.systemType => FTPSystemTypeException("NAME system type."),
+      FTPCode.serviceReady => FTPServiceReadyException(
         "Service ready for new user.",
       ),
-      FTPCode.ClosingConnection => FTPClosingConnectionException(
+      FTPCode.closingConnection => FTPClosingConnectionException(
         "Service closing control connection.",
       ),
-      FTPCode.DataConnectionOpen => FTPDataConnectionOpenException(
+      FTPCode.dataConnectionOpen => FTPDataConnectionOpenException(
         "Data connection open; no transfer in progress.",
       ),
-      FTPCode.ClosingDataConnection => FTPClosingDataConnectionException(
+      FTPCode.closingDataConnection => FTPClosingDataConnectionException(
         "Closing data connection.",
       ),
-      FTPCode.PassiveMode => FTPPassiveModeException(
+      FTPCode.passiveMode => FTPPassiveModeException(
         "Entering Passive Mode (h1,h2,h3,h4,p1,p2).",
       ),
-      FTPCode.LongPassiveMode => FTPLongPassiveModeException(
+      FTPCode.longPassiveMode => FTPLongPassiveModeException(
         "Entering Long Passive Mode (long address, port).",
       ),
-      FTPCode.ExtendedPassiveMode => FTPExtendedPassiveModeException(
+      FTPCode.extendedPassiveMode => FTPExtendedPassiveModeException(
         "Entering Extended Passive Mode (|||port|).",
       ),
-      FTPCode.UserLoggedIn => FTPUserLoggedInException(
+      FTPCode.userLoggedIn => FTPUserLoggedInException(
         "User logged in, proceed.",
       ),
-      FTPCode.FileActionComplete => FTPFileActionCompleteException(
+      FTPCode.fileActionComplete => FTPFileActionCompleteException(
         "Requested file action okay, completed.",
       ),
-      FTPCode.PathnameCreated => FTPPathnameCreatedException(
+      FTPCode.pathnameCreated => FTPPathnameCreatedException(
         "\"PATHNAME\" created.",
       ),
-      FTPCode.NeedPassword => FTPNeedPasswordException(
+      FTPCode.needPassword => FTPNeedPasswordException(
         "User name okay, need password.",
       ),
-      FTPCode.NeedAccount => FTPNeedAccountException("Need account for login."),
-      FTPCode.PendingFurtherInformation =>
+      FTPCode.needAccount => FTPNeedAccountException("Need account for login."),
+      FTPCode.pendingFurtherInformation =>
         FTPPendingFurtherInformationException(
           "Requested file action pending further information.",
         ),
-      FTPCode.ServiceNotAvailable => FTPServiceNotAvailableException(
+      FTPCode.serviceNotAvailable => FTPServiceNotAvailableException(
         "Service not available, closing control connection.",
       ),
-      FTPCode.DataConnectionError => FTPDataConnectionErrorException(
+      FTPCode.dataConnectionError => FTPDataConnectionErrorException(
         "Can't open data connection.",
       ),
-      FTPCode.TransferAborted => FTPTransferAbortedException(
+      FTPCode.transferAborted => FTPTransferAbortedException(
         "Connection closed; transfer aborted.",
       ),
-      FTPCode.InvalidCredentials => FTPInvalidCredentialsException(
+      FTPCode.invalidCredentials => FTPInvalidCredentialsException(
         "Invalid username or password.",
       ),
-      FTPCode.HostUnavailable => FTPHostUnavailableException(
+      FTPCode.hostUnavailable => FTPHostUnavailableException(
         "Requested host unavailable.",
       ),
-      FTPCode.FileActionNotTaken => FTPFileActionNotTakenException(
+      FTPCode.fileActionNotTaken => FTPFileActionNotTakenException(
         "Requested file action not taken.",
       ),
-      FTPCode.LocalError => FTPLocalErrorException(
+      FTPCode.localError => FTPLocalErrorException(
         "Requested action aborted; local error in processing.",
       ),
-      FTPCode.InsufficientStorage => FTPInsufficientStorageException(
+      FTPCode.insufficientStorage => FTPInsufficientStorageException(
         "Requested action not taken. Insufficient storage space in system.",
       ),
-      FTPCode.SyntaxError => FTPSyntaxErrorException(
+      FTPCode.syntaxError => FTPSyntaxErrorException(
         "Syntax error, command unrecognized.",
       ),
-      FTPCode.ParameterError => FTPParameterErrorException(
+      FTPCode.parameterError => FTPParameterErrorException(
         "Syntax error in parameters or arguments.",
       ),
-      FTPCode.CommandNotImplemented => FTPCommandNotImplementedException(
+      FTPCode.commandNotImplemented => FTPCommandNotImplementedException(
         "Command not implemented.",
       ),
-      FTPCode.BadSequence => FTPBadSequenceException(
+      FTPCode.badSequence => FTPBadSequenceException(
         "Bad sequence of commands.",
       ),
-      FTPCode.NotImplementedForParameter =>
+      FTPCode.notImplementedForParameter =>
         FTPNotImplementedForParameterException(
           "Command not implemented for that parameter.",
         ),
-      FTPCode.NotLoggedIn => FTPNotLoggedInException("Not logged in."),
-      FTPCode.NeedAccountForStorage => FTPNeedAccountForStorageException(
+      FTPCode.notLoggedIn => FTPNotLoggedInException("Not logged in."),
+      FTPCode.needAccountForStorage => FTPNeedAccountForStorageException(
         "Need account for storing files.",
       ),
-      FTPCode.FileUnavailable => FTPFileUnavailableException(
+      FTPCode.fileUnavailable => FTPFileUnavailableException(
         "Requested action not taken. File unavailable (e.g., file not found, no access).",
       ),
-      FTPCode.PageTypeUnknown => FTPPageTypeUnknownException(
+      FTPCode.pageTypeUnknown => FTPPageTypeUnknownException(
         "Requested action aborted; page type unknown.",
       ),
-      FTPCode.ExceededStorage => FTPExceededStorageException(
+      FTPCode.exceededStorage => FTPExceededStorageException(
         "Requested file action aborted. Exceeded storage allocation (for current directory or dataset).",
       ),
-      FTPCode.FileNameNotAllowed => FTPFileNameNotAllowedException(
+      FTPCode.fileNameNotAllowed => FTPFileNameNotAllowedException(
         "Requested action not taken. File name not allowed.",
       ),
     };

@@ -22,23 +22,24 @@ class FTPConnect {
   /// [pass]: Password if not anonymous login
   /// [debug]: Enable Debug Logging
   /// [timeout]: Timeout in seconds to wait for responses
-  FTPConnect(String host,
-      {int? port,
-      String user = 'anonymous',
-      String pass = '',
-      bool showLog = false,
-      SecurityType securityType = SecurityType.FTP,
-      Logger? logger,
-      int timeout = 30,
-      Duration sendingResponseDelay = const Duration(milliseconds: 300)})
-      : _user = user,
-        _pass = pass {
-    port ??= securityType == SecurityType.FTPS ? 990 : 21;
+  FTPConnect(
+    String host, {
+    int? port,
+    String user = 'anonymous',
+    String pass = '',
+    bool showLog = false,
+    SecurityType securityType = SecurityType.ftp,
+    Logger? logger,
+    int timeout = 30,
+    Duration sendingResponseDelay = const Duration(milliseconds: 300),
+  }) : _user = user,
+       _pass = pass {
+    port ??= securityType == SecurityType.ftps ? 990 : 21;
     _socket = FTPSocket(
       host,
       port,
       securityType,
-      logger != null ? logger : Logger(isEnabled: showLog),
+      logger ?? Logger(isEnabled: showLog),
       timeout,
       sendingResponseDelay: sendingResponseDelay,
     );
@@ -78,11 +79,9 @@ class FTPConnect {
     String sRemoteName = '',
     FileProgress? onProgress,
   }) {
-    return FTPFile(_socket).upload(
-      fFile,
-      remoteName: sRemoteName,
-      onProgress: onProgress,
-    );
+    return FTPFile(
+      _socket,
+    ).upload(fFile, remoteName: sRemoteName, onProgress: onProgress);
   }
 
   /// Download the Remote File [sRemoteName] to the local File [fFile]
@@ -91,8 +90,9 @@ class FTPConnect {
     File fFile, {
     FileProgress? onProgress,
   }) {
-    return FTPFile(_socket)
-        .download(sRemoteName, fFile, onProgress: onProgress);
+    return FTPFile(
+      _socket,
+    ).download(sRemoteName, fFile, onProgress: onProgress);
   }
 
   /// Create a new Directory with the Name of [sDirectory] in the current directory.
@@ -117,26 +117,29 @@ class FTPConnect {
   /// Returns `false` if the directory could not be deleted or does not nexist
   /// THIS USEFUL TO DELETE NON EMPTY DIRECTORY
   Future<bool> deleteDirectory(String sDirectory) async {
-    String currentDir = await this.currentDirectory();
-    if (!await this.changeDirectory(sDirectory)) {
+    String currentDir = await currentDirectory();
+    if (!await changeDirectory(sDirectory)) {
       throw FTPCannotChangeDirectoryException(
-          "Couldn't change directory to $sDirectory");
+        "Couldn't change directory to $sDirectory",
+      );
     }
-    List<FTPEntry> dirContent = await this.listDirectoryContent();
+    List<FTPEntry> dirContent = await listDirectoryContent();
     await Future.forEach(dirContent, (FTPEntry entry) async {
-      if (entry.type == FTPEntryType.FILE) {
+      if (entry.type == FTPEntryType.file) {
         if (!await deleteFile(entry.name)) {
           throw FTPCannotDeleteFileException(
-              "Couldn't delete file ${entry.name}");
+            "Couldn't delete file ${entry.name}",
+          );
         }
       } else {
         if (!await deleteDirectory(entry.name)) {
           throw FTPCannotDeleteFolderException(
-              "Couldn't delete folder ${entry.name}");
+            "Couldn't delete folder ${entry.name}",
+          );
         }
       }
     });
-    await this.changeDirectory(currentDir);
+    await changeDirectory(currentDir);
     return await deleteEmptyDirectory(sDirectory);
   }
 
@@ -203,7 +206,7 @@ class FTPConnect {
     FileProgress? onProgress,
   }) {
     Future<bool> uploadFileRetry() async {
-      bool res = await this.uploadFile(
+      bool res = await uploadFile(
         fileToUpload,
         sRemoteName: pRemoteName,
         onProgress: onProgress,
@@ -227,7 +230,7 @@ class FTPConnect {
     FileProgress? onProgress,
   }) {
     Future<bool> downloadFileRetry() async {
-      bool res = await this.downloadFile(
+      bool res = await downloadFile(
         pRemoteName,
         pLocalFile,
         onProgress: onProgress,
@@ -240,28 +243,34 @@ class FTPConnect {
 
   /// Download the Remote Directory [pRemoteDir] to the local File [pLocalDir]
   /// [pRetryCount] number of attempts
-  Future<bool> downloadDirectory(String pRemoteDir, Directory pLocalDir,
-      {int pRetryCount = 1}) {
+  Future<bool> downloadDirectory(
+    String pRemoteDir,
+    Directory pLocalDir, {
+    int pRetryCount = 1,
+  }) {
     Future<bool> downloadDir(String? pRemoteDir, Directory pLocalDir) async {
       await pLocalDir.create(recursive: true);
 
       //read remote directory content
-      if (!await this.changeDirectory(pRemoteDir)) {
-        throw FTPCannotDownloadException('Cannot download directory',
-            '$pRemoteDir not found or inaccessible !');
+      if (!await changeDirectory(pRemoteDir)) {
+        throw FTPCannotDownloadException(
+          'Cannot download directory',
+          '$pRemoteDir not found or inaccessible !',
+        );
       }
-      List<FTPEntry> dirContent = await this.listDirectoryContent();
+      List<FTPEntry> dirContent = await listDirectoryContent();
       await Future.forEach(dirContent, (FTPEntry entry) async {
-        if (entry.type == FTPEntryType.FILE) {
+        if (entry.type == FTPEntryType.file) {
           File localFile = File(join(pLocalDir.path, entry.name));
           await downloadFile(entry.name, localFile);
-        } else if (entry.type == FTPEntryType.DIR) {
+        } else if (entry.type == FTPEntryType.dir) {
           //create a local directory
-          var localDir = await Directory(join(pLocalDir.path, entry.name))
-              .create(recursive: true);
+          var localDir = await Directory(
+            join(pLocalDir.path, entry.name),
+          ).create(recursive: true);
           await downloadDir(entry.name, localDir);
           //back to current folder
-          await this.changeDirectory('..');
+          await changeDirectory('..');
         }
       });
       return true;
@@ -280,7 +289,7 @@ class FTPConnect {
   /// Returns `true` if the directory was changed successfully
   /// Returns `false` if the directory could not be changed (does not exist, no permissions or another error)
   Future<bool> checkFolderExistence(String pDirectory) {
-    return this.changeDirectory(pDirectory);
+    return changeDirectory(pDirectory);
   }
 
   /// Create a new Directory with the Name of [pDirectory] in the current directory if it does not exist.
@@ -289,7 +298,7 @@ class FTPConnect {
   /// Returns `false` if the directory not found and could not be created
   Future<bool> createFolderIfNotExist(String pDirectory) async {
     if (!await checkFolderExistence(pDirectory)) {
-      return this.makeDirectory(pDirectory);
+      return makeDirectory(pDirectory);
     }
     return true;
   }
@@ -297,15 +306,14 @@ class FTPConnect {
 
 ///Note that [LIST] and [MLSD] return content detailed
 ///BUT [NLST] return only dir/file names inside the given directory
-enum ListCommand { NLST, LIST, MLSD }
+enum ListCommand { nlst, list, mlsd }
 
 enum TransferType { auto, ascii, binary }
 
 enum TransferMode { active, passive }
 
-enum SecurityType { FTP, FTPS, FTPES }
+enum SecurityType { ftp, ftps, ftpes }
 
 extension CommandListTypeEnum on ListCommand {
-  String get describeEnum =>
-      this.toString().substring(this.toString().indexOf('.') + 1);
+  String get describeEnum => toString().substring(toString().indexOf('.') + 1);
 }

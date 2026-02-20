@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -36,7 +37,9 @@ class FTPDirectory {
     FTPReply sResponse = await _socket.sendCommand('PWD');
     if (!sResponse.isSuccessCode()) {
       throw FTPUnableToGetCWDException(
-          'Failed to get current working directory', sResponse.message);
+        'Failed to get current working directory',
+        sResponse.message,
+      );
     }
 
     int iStart = sResponse.message.indexOf('"') + 1;
@@ -54,15 +57,20 @@ class FTPDirectory {
 
     // Data transfer socket
     int iPort = Utils.parsePort(response.message, _socket.supportIPV6);
-    Socket dataSocket = await Socket.connect(_socket.host, iPort,
-        timeout: Duration(seconds: _socket.timeout));
+    Socket dataSocket = await Socket.connect(
+      _socket.host,
+      iPort,
+      timeout: Duration(seconds: _socket.timeout),
+    );
     //Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished
     bool isTransferCompleted = response.isSuccessCode();
     if (!isTransferCompleted && response.code != 125 && response.code != 150) {
       throw FTPConnectionRefusedException(
-          'Connection refused. ', response.message);
+        'Connection refused. ',
+        response.message,
+      );
     }
 
     List<int> lstDirectoryListing = [];
@@ -81,7 +89,7 @@ class FTPDirectory {
 
     // Convert MLSD response into FTPEntry
     List<FTPEntry> lstFTPEntries = <FTPEntry>[];
-    String.fromCharCodes(lstDirectoryListing).split('\n').forEach((line) {
+    Utf8Codec().decode(lstDirectoryListing).split('\n').forEach((line) {
       if (line.trim().isNotEmpty) {
         lstFTPEntries.add(
           FTPEntry.parse(line.replaceAll('\r', ""), _socket.listCommand),
