@@ -22,17 +22,24 @@ enum FTPCode {
   longPassiveMode(228),
   extendedPassiveMode(229),
   userLoggedIn(230),
+  userLoggedInSecure(232),
+  securityMechanismAccepted(234),
+  securityDataAccepted(235),
   fileActionComplete(250),
   pathnameCreated(257),
   // 3xx - Intermediate Positive Replies
   needPassword(331),
   needAccount(332),
+  securityMechanismNeedsData(334),
+  securityDataNeedsExchange(335),
+  usernamePasswordChallenge(336),
   pendingFurtherInformation(350),
   // 4xx - Transient Negative Replies
   serviceNotAvailable(421),
   dataConnectionError(425),
   transferAborted(426),
   invalidCredentials(430),
+  unavailableSecurityResource(431),
   hostUnavailable(434),
   fileActionNotTaken(450),
   localError(451),
@@ -45,10 +52,19 @@ enum FTPCode {
   notImplementedForParameter(504),
   notLoggedIn(530),
   needAccountForStorage(532),
+  commandProtectionDenied(533),
+  requestDeniedPolicy(534),
+  failedSecurityCheck(535),
+  dataProtectionNotSupported(536),
+  commandProtectionNotSupported(537),
   fileUnavailable(550),
   pageTypeUnknown(551),
   exceededStorage(552),
-  fileNameNotAllowed(553);
+  fileNameNotAllowed(553),
+  // 6xx - Confidentiality and Integrity Replies
+  integrityProtectedReply(631),
+  confidentialityIntegrityProtected(632),
+  confidentialityProtectedReply(633);
 
   final int code;
 
@@ -113,6 +129,15 @@ enum FTPCode {
       FTPCode.userLoggedIn => FTPUserLoggedInException(
         "User logged in, proceed.",
       ),
+      FTPCode.userLoggedInSecure => FTPUserLoggedInSecureException(
+        "User logged in, authorized by security data exchange.",
+      ),
+      FTPCode.securityMechanismAccepted => FTPSecurityMechanismAcceptedException(
+        "Server accepts the security mechanism specified by the client; no security data needs to be exchanged.",
+      ),
+      FTPCode.securityDataAccepted => FTPSecurityDataAcceptedException(
+        "Server accepts the security data given by the client; no further security data needs to be exchanged.",
+      ),
       FTPCode.fileActionComplete => FTPFileActionCompleteException(
         "Requested file action okay, completed.",
       ),
@@ -123,6 +148,17 @@ enum FTPCode {
         "User name okay, need password.",
       ),
       FTPCode.needAccount => FTPNeedAccountException("Need account for login."),
+      FTPCode.securityMechanismNeedsData =>
+        FTPSecurityMechanismNeedsDataException(
+          "Server accepts the security mechanism specified by the client; some security data needs to be exchanged.",
+        ),
+      FTPCode.securityDataNeedsExchange => FTPSecurityDataNeedsExchangeException(
+        "Server accepts the security data given by the client; more security data needs to be exchanged.",
+      ),
+      FTPCode.usernamePasswordChallenge =>
+        FTPUsernamePasswordChallengeException(
+          'Username okay, password okay. Challenge is "....".',
+        ),
       FTPCode.pendingFurtherInformation =>
         FTPPendingFurtherInformationException(
           "Requested file action pending further information.",
@@ -139,6 +175,10 @@ enum FTPCode {
       FTPCode.invalidCredentials => FTPInvalidCredentialsException(
         "Invalid username or password.",
       ),
+      FTPCode.unavailableSecurityResource =>
+        FTPUnavailableSecurityResourceException(
+          "Need some unavailable resource to process security.",
+        ),
       FTPCode.hostUnavailable => FTPHostUnavailableException(
         "Requested host unavailable.",
       ),
@@ -171,6 +211,23 @@ enum FTPCode {
       FTPCode.needAccountForStorage => FTPNeedAccountForStorageException(
         "Need account for storing files.",
       ),
+      FTPCode.commandProtectionDenied => FTPCommandProtectionDeniedException(
+        "Command protection level denied for policy reasons.",
+      ),
+      FTPCode.requestDeniedPolicy => FTPRequestDeniedPolicyException(
+        "Request denied for policy reasons.",
+      ),
+      FTPCode.failedSecurityCheck => FTPFailedSecurityCheckException(
+        "Failed security check.",
+      ),
+      FTPCode.dataProtectionNotSupported =>
+        FTPDataProtectionNotSupportedException(
+          "Data protection level not supported by security mechanism.",
+        ),
+      FTPCode.commandProtectionNotSupported =>
+        FTPCommandProtectionNotSupportedException(
+          "Command protection level not supported by security mechanism.",
+        ),
       FTPCode.fileUnavailable => FTPFileUnavailableException(
         "Requested action not taken. File unavailable (e.g., file not found, no access).",
       ),
@@ -183,6 +240,17 @@ enum FTPCode {
       FTPCode.fileNameNotAllowed => FTPFileNameNotAllowedException(
         "Requested action not taken. File name not allowed.",
       ),
+      FTPCode.integrityProtectedReply => FTPIntegrityProtectedReplyException(
+        "Integrity protected reply.",
+      ),
+      FTPCode.confidentialityIntegrityProtected =>
+        FTPConfidentialityIntegrityProtectedException(
+          "Confidentiality and integrity protected reply.",
+        ),
+      FTPCode.confidentialityProtectedReply =>
+        FTPConfidentialityProtectedReplyException(
+          "Confidentiality protected reply.",
+        ),
     };
   }
 }
@@ -595,6 +663,39 @@ class FTPUserLoggedInException implements Exception {
       'FTPUserLoggedInException: $message (Response: $response)';
 }
 
+class FTPUserLoggedInSecureException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPUserLoggedInSecureException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPUserLoggedInSecureException: $message (Response: $response)';
+}
+
+class FTPSecurityMechanismAcceptedException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPSecurityMechanismAcceptedException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPSecurityMechanismAcceptedException: $message (Response: $response)';
+}
+
+class FTPSecurityDataAcceptedException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPSecurityDataAcceptedException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPSecurityDataAcceptedException: $message (Response: $response)';
+}
+
 class FTPFileActionCompleteException implements Exception {
   final String message;
   final String? response;
@@ -641,6 +742,39 @@ class FTPNeedAccountException implements Exception {
   @override
   String toString() =>
       'FTPNeedAccountException: $message (Response: $response)';
+}
+
+class FTPSecurityMechanismNeedsDataException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPSecurityMechanismNeedsDataException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPSecurityMechanismNeedsDataException: $message (Response: $response)';
+}
+
+class FTPSecurityDataNeedsExchangeException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPSecurityDataNeedsExchangeException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPSecurityDataNeedsExchangeException: $message (Response: $response)';
+}
+
+class FTPUsernamePasswordChallengeException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPUsernamePasswordChallengeException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPUsernamePasswordChallengeException: $message (Response: $response)';
 }
 
 class FTPPendingFurtherInformationException implements Exception {
@@ -700,6 +834,17 @@ class FTPInvalidCredentialsException implements Exception {
   @override
   String toString() =>
       'FTPInvalidCredentialsException: $message (Response: $response)';
+}
+
+class FTPUnavailableSecurityResourceException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPUnavailableSecurityResourceException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPUnavailableSecurityResourceException: $message (Response: $response)';
 }
 
 class FTPHostUnavailableException implements Exception {
@@ -826,6 +971,61 @@ class FTPNeedAccountForStorageException implements Exception {
       'FTPNeedAccountForStorageException: $message (Response: $response)';
 }
 
+class FTPCommandProtectionDeniedException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPCommandProtectionDeniedException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPCommandProtectionDeniedException: $message (Response: $response)';
+}
+
+class FTPRequestDeniedPolicyException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPRequestDeniedPolicyException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPRequestDeniedPolicyException: $message (Response: $response)';
+}
+
+class FTPFailedSecurityCheckException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPFailedSecurityCheckException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPFailedSecurityCheckException: $message (Response: $response)';
+}
+
+class FTPDataProtectionNotSupportedException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPDataProtectionNotSupportedException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPDataProtectionNotSupportedException: $message (Response: $response)';
+}
+
+class FTPCommandProtectionNotSupportedException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPCommandProtectionNotSupportedException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPCommandProtectionNotSupportedException: $message (Response: $response)';
+}
+
 class FTPFileUnavailableException implements Exception {
   final String message;
   final String? response;
@@ -868,4 +1068,41 @@ class FTPFileNameNotAllowedException implements Exception {
   @override
   String toString() =>
       'FTPFileNameNotAllowedException: $message (Response: $response)';
+}
+
+/// ============================================================================
+/// FTP 6xx Error Code Exceptions - Confidentiality and Integrity (RFC 2228)
+/// ============================================================================
+
+class FTPIntegrityProtectedReplyException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPIntegrityProtectedReplyException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPIntegrityProtectedReplyException: $message (Response: $response)';
+}
+
+class FTPConfidentialityIntegrityProtectedException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPConfidentialityIntegrityProtectedException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPConfidentialityIntegrityProtectedException: $message (Response: $response)';
+}
+
+class FTPConfidentialityProtectedReplyException implements Exception {
+  final String message;
+  final String? response;
+
+  FTPConfidentialityProtectedReplyException(this.message, [this.response]);
+
+  @override
+  String toString() =>
+      'FTPConfidentialityProtectedReplyException: $message (Response: $response)';
 }
