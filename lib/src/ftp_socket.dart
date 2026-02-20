@@ -85,8 +85,8 @@ class FTPSocket {
 
     final FTPCode? ftpCode = FTPCode.fromCode(code);
 
-    if (ftpCode!.isError) {
-      throw ftpCode.exception;
+    if (ftpCode?.isError ?? false) {
+      throw ftpCode!.exception;
     }
 
     FTPReply reply = FTPReply(code, r);
