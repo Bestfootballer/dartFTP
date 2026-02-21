@@ -3,8 +3,8 @@ import 'dart:async';
 class Utils {
   Utils._();
 
-  static int parsePort(String response, bool isIPV6) {
-    return isIPV6 ? parsePortEPSV(response) : parsePortPASV(response);
+  static int parsePort(String response) {
+    return parsePortEPSV(response);
   }
 
   /// Parse the Passive Mode Port from the Servers [sResponse]
@@ -17,21 +17,6 @@ class Utils {
       sResponse = sResponse.substring(iParOpen + 4, iParClose - 1);
     }
     return int.parse(sResponse);
-  }
-
-  /// Parse the Passive Mode Port from the Servers [sResponse]
-  /// format 227 Entering Passive Mode (192,168,8,36,8,75).
-  static int parsePortPASV(String sResponse) {
-    int iParOpen = sResponse.indexOf('(');
-    int iParClose = sResponse.indexOf(')');
-
-    String sParameters = sResponse.substring(iParOpen + 1, iParClose);
-    List<String> lstParameters = sParameters.split(',');
-
-    int iPort1 = int.parse(lstParameters[lstParameters.length - 2]);
-    int iPort2 = int.parse(lstParameters[lstParameters.length - 1]);
-
-    return (iPort1 * 256) + iPort2;
   }
 
   ///retry a function [retryCount] times, until exceed [retryCount] or execute the function successfully

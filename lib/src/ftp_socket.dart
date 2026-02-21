@@ -211,7 +211,7 @@ class FTPSocket {
     if (transferMode == TransferMode.active) {
       //todo later
     } else {
-      res = await sendCommand(supportIPV6 ? 'EPSV' : 'PASV');
+      res = await sendCommand('EPSV');
       if (!res.isSuccessCode()) {
         throw FTPUnablePassiveModeException(
           'Could not start Passive Mode',
