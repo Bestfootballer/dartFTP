@@ -74,9 +74,17 @@ class FTPDirectory {
     }
 
     List<int> lstDirectoryListing = [];
-    await dataSocket.listen((Uint8List data) {
-      lstDirectoryListing.addAll(data);
-    }).asFuture();
+    await dataSocket
+        .timeout(
+          Duration(seconds: 2),
+          onTimeout: (_) {
+            throw FTPDirectoryListingTimeoutException();
+          },
+        )
+        .listen((Uint8List data) {
+          lstDirectoryListing.addAll(data);
+        })
+        .asFuture();
 
     await dataSocket.close();
 

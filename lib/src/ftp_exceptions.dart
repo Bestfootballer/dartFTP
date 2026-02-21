@@ -255,6 +255,10 @@ enum FTPCode {
   }
 }
 
+class FTPDirectoryListingTimeoutException implements Exception {
+  const FTPDirectoryListingTimeoutException();
+}
+
 /// Base exception class for general FTP connection and protocol errors
 class FTPConnectException implements Exception {
   final String message;
