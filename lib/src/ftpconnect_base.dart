@@ -45,6 +45,11 @@ class FTPConnect {
     );
   }
 
+  SecurityType get securityType => _socket.securityType;
+
+  set securityType(SecurityType securityType) =>
+      _socket.securityType = securityType;
+
   set transferMode(TransferMode pTransferMode) {
     _socket.transferMode = pTransferMode;
   }

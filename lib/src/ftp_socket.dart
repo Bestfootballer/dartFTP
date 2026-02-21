@@ -10,7 +10,7 @@ class FTPSocket {
   final int port;
   final Logger logger;
   final int timeout;
-  final SecurityType securityType;
+  SecurityType _securityType = SecurityType.ftp;
 
   /// This duration is used to set a delay for waiting responses from FTP server.
   final Duration sendingResponseDelay;
@@ -23,15 +23,22 @@ class FTPSocket {
   FTPSocket(
     this.host,
     this.port,
-    this.securityType,
+    SecurityType securityType,
     this.logger,
     this.timeout, {
     this.sendingResponseDelay = const Duration(milliseconds: 300),
-  });
+  }) : _securityType = securityType;
+
+  set securityType(SecurityType pSecurityType) {
+    _securityType = pSecurityType;
+  }
+
+  SecurityType get securityType => _securityType;
 
   /// Set current transfer type of socket
   ///
   /// Supported types are: [TransferType.auto], [TransferType.ascii], [TransferType.binary],
+  ///
   TransferType get transferType => _transferType;
 
   /// Read the FTP Server response from the Stream
@@ -118,7 +125,7 @@ class FTPSocket {
 
     try {
       // FTPS starts secure
-      if (securityType == SecurityType.ftps) {
+      if (_securityType == SecurityType.ftps) {
         _socket = await RawSecureSocket.connect(
           host,
           port,
@@ -139,7 +146,7 @@ class FTPSocket {
     await readResponse();
 
     // FTPES needs to be upgraded prior to getting a welcome
-    if (securityType == SecurityType.ftpes) {
+    if (_securityType == SecurityType.ftpes) {
       FTPReply lResp = await sendCommand('AUTH TLS');
       if (!lResp.isSuccessCode()) {
         lResp = await sendCommand('AUTH SSL');
@@ -157,7 +164,7 @@ class FTPSocket {
       );
     }
 
-    if ([SecurityType.ftpes, SecurityType.ftps].contains(securityType)) {
+    if ([SecurityType.ftpes, SecurityType.ftps].contains(_securityType)) {
       await sendCommand('PBSZ 0');
       await sendCommand('PROT P');
     }
