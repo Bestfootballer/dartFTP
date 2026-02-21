@@ -77,7 +77,7 @@ class FTPFile {
     _socket.sendCommandWithoutWaitingResponse('RETR $sRemoteName');
 
     // Data Transfer Socket
-    int lPort = Utils.parsePort(response.message, _socket.supportIPV6);
+    int lPort = Utils.parsePort(response.message);
     _socket.logger.log('Opening DataSocket to Port $lPort');
     final Socket dataSocket = await Socket.connect(
       _socket.host,
@@ -148,7 +148,7 @@ class FTPFile {
     _socket.sendCommandWithoutWaitingResponse('STOR $sFilename');
 
     // Data Transfer Socket
-    int iPort = Utils.parsePort(response.message, _socket.supportIPV6);
+    int iPort = Utils.parsePort(response.message);
     _socket.logger.log('Opening DataSocket to Port $iPort');
     final Socket dataSocket = await Socket.connect(_socket.host, iPort);
     //Test if second socket connection accepted or not
