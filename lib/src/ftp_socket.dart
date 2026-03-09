@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:ftpconnect/src/commands/commands.dart';
 
 import '/src/ftp_reply.dart';
@@ -62,10 +63,7 @@ class FTPSocket {
       (data) async {
         if (data == RawSocketEvent.closed) {
           _isConnected = false;
-          if (_socket.available() > 0) {
-            final line = utf8.decode(_socket.read()!);
-            logger.log('< $line');
-          }
+
           _cancelSubscriptions();
           return;
         } else if (data == RawSocketEvent.read) {
@@ -87,7 +85,13 @@ class FTPSocket {
             } else {
               break;
             }
-            if (splitted.isNotEmpty) {
+            if (splitted.firstWhereOrNull(
+                  (e) => e.code == FTPCode.serviceNotAvailable,
+                ) !=
+                null) {
+              _isConnected = false;
+              break;
+            } else if (splitted.isNotEmpty) {
               _responseCompleter.complete(splitted);
               _responseCompleter = Completer<List<FTPReply>>();
             }
