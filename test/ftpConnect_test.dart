@@ -2,6 +2,10 @@
 import 'dart:io';
 
 import 'package:ftpconnect/ftpconnect.dart';
+import 'package:ftpconnect/src/commands/list_command.dart';
+import 'package:ftpconnect/src/commands/security_type.dart';
+import 'package:ftpconnect/src/commands/transfer_mode.dart';
+import 'package:ftpconnect/src/commands/transfer_type.dart';
 import 'package:ftpconnect/src/ftp_reply.dart';
 import 'package:test/test.dart';
 

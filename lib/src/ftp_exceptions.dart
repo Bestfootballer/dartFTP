@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:ftpconnect/src/commands/commands.dart';
 
 enum FTPCode {
   // 1xx - Preliminary Replies
@@ -72,6 +73,82 @@ enum FTPCode {
 
   static FTPCode? fromCode(int code) {
     return FTPCode.values.firstWhereOrNull((ftpCode) => ftpCode.code == code);
+  }
+
+  static FTPCode? fromCommand(Commands command) {
+    return switch (command) {
+      Commands.abor => FTPCode.closingDataConnection,
+      Commands.acct => FTPCode.userLoggedIn,
+      Commands.adat => FTPCode.securityDataAccepted,
+      Commands.allo => FTPCode.commandOkay,
+      Commands.appe => FTPCode.closingDataConnection,
+      Commands.auth => FTPCode.securityMechanismAccepted,
+      Commands.avbl => FTPCode.fileStatus,
+      Commands.ccc => FTPCode.commandOkay,
+      Commands.cdup => FTPCode.commandOkay,
+      Commands.conf => FTPCode.confidentialityIntegrityProtected,
+      Commands.csid => FTPCode.commandOkay,
+      Commands.cwd => FTPCode.fileActionComplete,
+      Commands.dele => FTPCode.fileActionComplete,
+      Commands.dsiz => FTPCode.fileStatus,
+      Commands.enc => FTPCode.confidentialityProtectedReply,
+      Commands.eprt => FTPCode.commandOkay,
+      Commands.epsv => FTPCode.extendedPassiveMode,
+      Commands.feat => FTPCode.systemStatus,
+      Commands.help => FTPCode.helpMessage,
+      Commands.host => FTPCode.serviceReady,
+      Commands.lang => FTPCode.commandOkay,
+      Commands.list => FTPCode.openingDataConnection,
+      Commands.lprt => FTPCode.commandOkay,
+      Commands.lpsv => FTPCode.longPassiveMode,
+      Commands.mdtm => FTPCode.fileStatus,
+      Commands.mfct => FTPCode.fileStatus,
+      Commands.mff => FTPCode.fileStatus,
+      Commands.mfmt => FTPCode.fileStatus,
+      Commands.mic => FTPCode.integrityProtectedReply,
+      Commands.mkd => FTPCode.pathnameCreated,
+      Commands.mlsd => FTPCode.openingDataConnection,
+      Commands.mlst => FTPCode.fileActionComplete,
+      Commands.mode => FTPCode.commandOkay,
+      Commands.nlst => FTPCode.openingDataConnection,
+      Commands.noop => FTPCode.commandOkay,
+      Commands.opts => FTPCode.commandOkay,
+      Commands.pass => FTPCode.userLoggedIn,
+      Commands.pasv => FTPCode.passiveMode,
+      Commands.pbsz => FTPCode.commandOkay,
+      Commands.port => FTPCode.commandOkay,
+      Commands.prot => FTPCode.commandOkay,
+      Commands.pwd => FTPCode.pathnameCreated,
+      Commands.quit => FTPCode.closingConnection,
+      Commands.rein => FTPCode.serviceReady,
+      Commands.rename => FTPCode.pendingFurtherInformation,
+      Commands.rest => FTPCode.pendingFurtherInformation,
+      Commands.retr => FTPCode.closingDataConnection,
+      Commands.rmd => FTPCode.fileActionComplete,
+      Commands.rmda => FTPCode.fileActionComplete,
+      Commands.rnfr => FTPCode.pendingFurtherInformation,
+      Commands.rnto => FTPCode.fileActionComplete,
+      Commands.site => FTPCode.commandOkay,
+      Commands.size => FTPCode.fileStatus,
+      Commands.smnt => FTPCode.fileActionComplete,
+      Commands.spsv => FTPCode.passiveMode,
+      Commands.stat => FTPCode.systemStatus,
+      Commands.stor => FTPCode.closingDataConnection,
+      Commands.stou => FTPCode.closingDataConnection,
+      Commands.stru => FTPCode.commandOkay,
+      Commands.syst => FTPCode.systemType,
+      Commands.thmb => FTPCode.openingDataConnection,
+      Commands.type => FTPCode.commandOkay,
+      Commands.user => FTPCode.needPassword,
+      Commands.xcup => FTPCode.commandOkay,
+      Commands.xmkd => FTPCode.pathnameCreated,
+      Commands.xpwd => FTPCode.pathnameCreated,
+      Commands.xrcp => null,
+      Commands.xrmd => FTPCode.fileActionComplete,
+      Commands.xrsq => null,
+      Commands.xsem => null,
+      Commands.xsen => null,
+    };
   }
 
   bool get isError => code >= 400;

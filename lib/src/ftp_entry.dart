@@ -1,7 +1,7 @@
+import 'package:ftpconnect/src/commands/list_command.dart';
 import 'package:intl/intl.dart';
 
 import 'ftp_exceptions.dart';
-import 'ftpconnect_base.dart';
 
 class FTPEntry {
   final String name;

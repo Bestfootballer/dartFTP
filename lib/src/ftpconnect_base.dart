@@ -10,8 +10,6 @@ import 'ftp_socket.dart';
 import 'utils.dart';
 
 class FTPConnect {
-  final String _user;
-  final String _pass;
   late FTPSocket _socket;
 
   /// Create a FTP Client instance
@@ -27,25 +25,29 @@ class FTPConnect {
     int? port,
     String user = 'anonymous',
     String pass = '',
+    String? account,
     bool showLog = false,
     SecurityType securityType = SecurityType.ftp,
     Logger? logger,
     int timeout = 30,
     Duration sendingResponseDelay = const Duration(milliseconds: 300),
-  }) : _user = user,
-       _pass = pass {
+  }) {
     port ??= securityType == SecurityType.ftps ? 990 : 21;
     _socket = FTPSocket(
-      host,
-      port,
-      securityType,
-      logger ?? Logger(isEnabled: showLog),
-      timeout,
+      host: host,
+      port: port,
+      user: user,
+      pass: pass,
+      account: account,
+      securityType: securityType,
+      logger: logger ?? Logger(isEnabled: showLog),
+      timeout: timeout,
       sendingResponseDelay: sendingResponseDelay,
     );
   }
 
   SecurityType get securityType => _socket.securityType;
+  ListCommand get listCommand => _socket.listCommand;
 
   set securityType(SecurityType securityType) =>
       _socket.securityType = securityType;
@@ -70,7 +72,7 @@ class FTPConnect {
 
   /// Connect to the FTP Server
   /// return true if we are connected successfully
-  Future<bool> connect() => _socket.connect(_user, _pass);
+  Future<bool> connect() => _socket.connect();
 
   /// Disconnect from the FTP Server
   /// return true if we are disconnected successfully
@@ -311,14 +313,3 @@ class FTPConnect {
 
 ///Note that [LIST] and [MLSD] return content detailed
 ///BUT [NLST] return only dir/file names inside the given directory
-enum ListCommand { nlst, list, mlsd }
-
-enum TransferType { auto, ascii, binary }
-
-enum TransferMode { active, passive }
-
-enum SecurityType { ftp, ftps, ftpes }
-
-extension CommandListTypeEnum on ListCommand {
-  String get describeEnum => toString().substring(toString().indexOf('.') + 1);
-}

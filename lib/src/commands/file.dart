@@ -18,7 +18,7 @@ class FTPFile {
 
   Future<bool> rename(String sOldName, String sNewName) async {
     FTPReply sResponse = await (_socket.sendCommand('RNFR $sOldName'));
-    if (sResponse.code != 350) {
+    if (sResponse.code != FTPCode.pendingFurtherInformation) {
       return false;
     }
 
@@ -85,10 +85,15 @@ class FTPFile {
       timeout: Duration(seconds: _socket.timeout),
     );
     // Test if second socket connection accepted or not
-    response = await _socket.readResponse();
+    response = await _socket.readResponse([
+      FTPCode.openingDataConnection,
+      FTPCode.dataConnectionAlreadyOpen,
+    ]);
     //some server return two lines 125 and 226 for transfer finished
     bool isTransferCompleted = response.isSuccessCode();
-    if (!isTransferCompleted && response.code != 125 && response.code != 150) {
+    if (!isTransferCompleted &&
+        response.code != FTPCode.dataConnectionAlreadyOpen &&
+        response.code != FTPCode.openingDataConnection) {
       throw FTPConnectionRefusedException(
         'Connection refused. ',
         response.message,
@@ -117,7 +122,7 @@ class FTPFile {
 
     if (!isTransferCompleted) {
       //Test if All data are well transferred
-      response = await _socket.readResponse();
+      response = await _socket.readResponse([FTPCode.closingDataConnection]);
       if (!response.isSuccessCode()) {
         throw FTPTransferException('Transfer Error.', response.message);
       }
@@ -152,10 +157,15 @@ class FTPFile {
     _socket.logger.log('Opening DataSocket to Port $iPort');
     final Socket dataSocket = await Socket.connect(_socket.host, iPort);
     //Test if second socket connection accepted or not
-    response = await _socket.readResponse();
+    response = await _socket.readResponse([
+      FTPCode.openingDataConnection,
+      FTPCode.dataConnectionAlreadyOpen,
+    ]);
     //some server return two lines 125 and 226 for transfer finished
     bool isTransferCompleted = response.isSuccessCode();
-    if (!isTransferCompleted && response.code != 125 && response.code != 150) {
+    if (!isTransferCompleted &&
+        response.code != FTPCode.dataConnectionAlreadyOpen &&
+        response.code != FTPCode.openingDataConnection) {
       throw FTPConnectionRefusedException(
         'Connection refused. ',
         response.message,
@@ -189,7 +199,7 @@ class FTPFile {
 
     if (!isTransferCompleted) {
       // Test if All data are well transferred
-      response = await _socket.readResponse();
+      response = await _socket.readResponse([FTPCode.closingDataConnection]);
       if (!response.isSuccessCode()) {
         throw FTPTransferException('Transfer Error.', response.message);
       }

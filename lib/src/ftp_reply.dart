@@ -1,24 +1,26 @@
 import 'dart:core';
 
+import 'package:ftpconnect/src/ftp_exceptions.dart';
+
 class FTPReply {
-  final int _code;
-  final String _messages;
+  final FTPCode code;
+  final String message;
 
-  FTPReply(this._code, this._messages);
+  FTPReply(this.code, this.message);
 
-  int get code => _code;
+  bool isSuccessCode() => code.code >= 100 && code.code < 400;
 
-  String get message => _messages;
-
-  bool isSuccessCode() {
-    int aux = _code - 200;
-    return aux >= 0 && aux < 100;
+  factory FTPReply.fromResponse(String response) {
+    final code = int.tryParse(response.substring(0, 3));
+    if (code == null) {
+      throw FTPIllegalReplyException('Invalid FTP reply: $response');
+    }
+    final message = response.substring(4);
+    return FTPReply(FTPCode.fromCode(code)!, message);
   }
 
   @override
   String toString() {
-    StringBuffer buffer = StringBuffer();
-    buffer.write("FTPReply =  [code= $_code, message= $_messages]");
-    return buffer.toString();
+    return '${code.code} $message';
   }
 }
