@@ -129,13 +129,18 @@ class FTPSocket {
     final response = await _responseCompleter.future;
     return response.firstWhere(
       (r) => codes.any((code) => code == r.code),
-      orElse: () => throw response
-          .firstWhere(
+      orElse: () => response.firstWhere(
+        (r) => r.isSuccessCode(),
+        orElse: () {
+          final reply = response.firstWhere(
             (e) => !e.isSuccessCode(),
             orElse: () => FTPReply(FTPCode.serviceNotAvailable, ''),
-          )
-          .code
-          .exception,
+          );
+          log('< ${reply.code} ${reply.message} ${reply.code.exception}');
+
+          throw reply.code.exception;
+        },
+      ),
     );
   }
 

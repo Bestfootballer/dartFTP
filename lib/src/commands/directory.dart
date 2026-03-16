@@ -5,8 +5,8 @@ import 'dart:typed_data';
 
 import 'package:ftpconnect/src/commands/list_command.dart';
 
+import '../ftp_code.dart';
 import '../ftp_entry.dart';
-import '../ftp_exceptions.dart';
 import '../ftp_reply.dart';
 import '../ftp_socket.dart';
 import '../utils.dart';
@@ -30,7 +30,6 @@ class FTPDirectory {
 
   Future<bool> changeDirectory(String? sName) async {
     FTPReply sResponse = await (_socket.sendCommand('CWD $sName'));
-
     return sResponse.isSuccessCode();
   }
 

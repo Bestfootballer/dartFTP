@@ -1,6 +1,6 @@
 import 'dart:core';
 
-import 'package:ftpconnect/src/ftp_exceptions.dart';
+import 'package:ftpconnect/src/ftp_code.dart';
 
 class FTPReply {
   final FTPCode code;
